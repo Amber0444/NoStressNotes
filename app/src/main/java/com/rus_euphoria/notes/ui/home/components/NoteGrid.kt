@@ -10,11 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rus_euphoria.notes.Note
+import com.rus_euphoria.notes.ui.components.SwipeableWrapper
 
 @Composable
 fun NoteGrid(
     notes: List<Note>,
     onNoteClick: (String) -> Unit,
+    onNoteDelete: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalStaggeredGrid(
@@ -25,10 +27,14 @@ fun NoteGrid(
         verticalItemSpacing = 12.dp
     ) {
         items(notes, key = { it.uid }) { note ->
-            NoteCard(
-                note = note,
-                onClick = { onNoteClick(note.uid) }
-            )
+            SwipeableWrapper(
+                onSwipeDelete = { onNoteDelete(note.uid) },
+            ) {
+                NoteCard(
+                    note = note,
+                    onClick = { onNoteClick(note.uid) }
+                )
+            }
         }
     }
 }

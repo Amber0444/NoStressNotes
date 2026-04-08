@@ -20,9 +20,14 @@ import androidx.compose.ui.unit.dp
 import com.rus_euphoria.notes.ui.theme.NotesAppTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var leakyHandler: LeakyHandler
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        leakyHandler = LeakyHandler(this)
+        leakyHandler.startLeaking()
 
         val notebook = FileNotebook()
         notebook.add(Note(title = "Первая заметка", content = "Содержимое первой заметки"))
@@ -38,6 +43,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        leakyHandler.stopLeaking()
     }
 }
 

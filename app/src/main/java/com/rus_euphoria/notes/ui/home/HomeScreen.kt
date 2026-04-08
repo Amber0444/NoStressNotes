@@ -29,6 +29,10 @@ fun HomeScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        viewModel.onEvent(HomeEvent.Refresh)
+    }
+
+    LaunchedEffect(Unit) {
         viewModel.action.collectLatest { action ->
             when (action) {
                 is HomeAction.NavigateToNote -> onNoteClick(action.uid)

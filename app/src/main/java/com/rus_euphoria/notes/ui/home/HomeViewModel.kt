@@ -30,9 +30,17 @@ class HomeViewModel(
 
     fun onEvent(event: HomeEvent) {
         when (event) {
+            is HomeEvent.Refresh -> refresh()
             is HomeEvent.NoteClicked -> _action.trySend(HomeAction.NavigateToNote(event.uid))
+            is HomeEvent.NoteDeleted -> deleteNote(event.uid)
             is HomeEvent.AddNoteClicked -> _action.trySend(HomeAction.NavigateToNewNote)
         }
+    }
+
+    private fun deleteNote(uid: String) {
+        notebook.remove(uid)
+        notebook.saveToFile(file)
+        refresh()
     }
 
     private fun refresh() {

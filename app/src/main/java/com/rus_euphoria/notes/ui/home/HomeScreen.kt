@@ -6,14 +6,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +32,11 @@ fun HomeScreen(
     onAddNote: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var noteToDelete by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(HomeEvent.Refresh)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.action.collectLatest { action ->
@@ -35,6 +45,27 @@ fun HomeScreen(
                 is HomeAction.NavigateToNewNote -> onAddNote()
             }
         }
+    }
+
+    if (noteToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { noteToDelete = null },
+            title = { Text("Delete note") },
+            text = { Text("Are you sure you want to delete this note?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onEvent(HomeEvent.NoteDeleted(noteToDelete!!))
+                    noteToDelete = null
+                }) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { noteToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -62,6 +93,7 @@ fun HomeScreen(
             NoteGrid(
                 notes = state.notes,
                 onNoteClick = { uid -> viewModel.onEvent(HomeEvent.NoteClicked(uid)) },
+                onNoteDelete = { uid -> noteToDelete = uid },
                 modifier = Modifier.weight(1f)
             )
         }

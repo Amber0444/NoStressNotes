@@ -1,0 +1,107 @@
+package com.rus_euphoria.notes.ui.edit
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rus_euphoria.notes.ui.edit.components.ColorPickerDialog
+import com.rus_euphoria.notes.ui.edit.components.ColorSelectionRow
+import com.rus_euphoria.notes.ui.edit.components.ContentField
+import com.rus_euphoria.notes.ui.edit.components.EditNoteTopBar
+import com.rus_euphoria.notes.ui.edit.components.ImportancePicker
+import com.rus_euphoria.notes.ui.edit.components.SelfDestructSection
+import com.rus_euphoria.notes.ui.edit.components.TitleField
+import kotlinx.coroutines.flow.collectLatest
+
+@Composable
+fun EditNoteScreen(
+    viewModel: EditNoteViewModel,
+    onNavigateBack: () -> Unit
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.action.collectLatest { action ->
+            when (action) {
+                is EditNoteAction.NavigateBack -> onNavigateBack()
+            }
+        }
+    }
+
+    if (state.showColorPicker) {
+        ColorPickerDialog(
+            initialColor = state.color,
+            onColorConfirmed = { viewModel.onEvent(EditNoteEvent.CustomColorReceived(it)) },
+            onDismiss = { viewModel.onEvent(EditNoteEvent.CloseColorPicker) }
+        )
+    }
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            EditNoteTopBar(
+                isExistingNote = true,
+                onBack = onNavigateBack,
+                onSave = { viewModel.onEvent(EditNoteEvent.SaveClicked) },
+                onDelete = { viewModel.onEvent(EditNoteEvent.DeleteClicked) }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+        ) {
+            TitleField(
+                value = state.title,
+                onValueChange = { viewModel.onEvent(EditNoteEvent.TitleChanged(it)) }
+            )
+
+            ContentField(
+                value = state.content,
+                onValueChange = { viewModel.onEvent(EditNoteEvent.ContentChanged(it)) }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ImportancePicker(
+                selected = state.importance,
+                onSelect = { viewModel.onEvent(EditNoteEvent.ImportanceSelected(it)) }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ColorSelectionRow(
+                selectedColor = state.color,
+                customColor = state.customColor,
+                onColorSelected = { viewModel.onEvent(EditNoteEvent.ColorSelected(it)) },
+                onOpenColorPicker = { viewModel.onEvent(EditNoteEvent.OpenColorPicker) }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            SelfDestructSection(
+                enabled = state.selfDestructEnabled,
+                onEnabledChange = { viewModel.onEvent(EditNoteEvent.SelfDestructToggled(it)) },
+                date = state.selfDestructDate,
+                onDateChange = { viewModel.onEvent(EditNoteEvent.SelfDestructDateChanged(it)) }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}

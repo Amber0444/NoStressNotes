@@ -1,6 +1,12 @@
 package com.rus_euphoria.notes.ui.edit.components
 
 import android.graphics.Color as AndroidColor
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -21,6 +27,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -34,10 +41,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.launch
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.min
@@ -60,9 +69,33 @@ fun ColorPickerDialog(
 
     val currentColor = Color.hsv(hue, saturation, brightness)
 
+    val animatedPreviewColor by animateColorAsState(
+        targetValue = currentColor,
+        animationSpec = tween(durationMillis = 250),
+        label = "previewColor"
+    )
+
+    val dialogScale = remember { Animatable(0.8f) }
+    val dialogAlpha = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        launch {
+            dialogScale.animateTo(
+                1f,
+                spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)
+            )
+        }
+        launch { dialogAlpha.animateTo(1f, tween(200)) }
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
+                .graphicsLayer {
+                    scaleX = dialogScale.value
+                    scaleY = dialogScale.value
+                    alpha = dialogAlpha.value
+                }
                 .clip(RoundedCornerShape(24.dp))
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(20.dp),
@@ -76,7 +109,7 @@ fun ColorPickerDialog(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(currentColor)
+                        .background(animatedPreviewColor)
                 )
                 Text("Pick a color", style = MaterialTheme.typography.headlineMedium)
             }
@@ -85,7 +118,7 @@ fun ColorPickerDialog(
                 hue = hue,
                 saturation = saturation,
                 brightness = brightness,
-                currentColor = currentColor,
+                previewColor = animatedPreviewColor,
                 onHueAndSaturationChanged = { h, s ->
                     hue = h
                     saturation = s
@@ -98,8 +131,8 @@ fun ColorPickerDialog(
                 onValueChange = { brightness = it },
                 valueRange = 0f..1f,
                 colors = SliderDefaults.colors(
-                    thumbColor = currentColor,
-                    activeTrackColor = currentColor
+                    thumbColor = animatedPreviewColor,
+                    activeTrackColor = animatedPreviewColor
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -124,9 +157,32 @@ private fun ColorWheel(
     hue: Float,
     saturation: Float,
     brightness: Float,
-    currentColor: Color,
+    previewColor: Color,
     onHueAndSaturationChanged: (Float, Float) -> Unit
 ) {
+    val wheelScale = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        wheelScale.animateTo(
+            1f,
+            spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+        )
+    }
+
+    val selectorSpring = spring<Float>(
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = Spring.StiffnessMedium
+    )
+    val animatedHue by animateFloatAsState(
+        targetValue = hue,
+        animationSpec = selectorSpring,
+        label = "hue"
+    )
+    val animatedSaturation by animateFloatAsState(
+        targetValue = saturation,
+        animationSpec = selectorSpring,
+        label = "saturation"
+    )
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -137,6 +193,10 @@ private fun ColorWheel(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
+                .graphicsLayer {
+                    scaleX = wheelScale.value
+                    scaleY = wheelScale.value
+                }
                 .pointerInput(Unit) {
                     detectTapGestures { offset ->
                         val cx = size.width / 2f
@@ -160,15 +220,16 @@ private fun ColorWheel(
                 }
         ) {
             drawColorWheel(brightness)
-            drawSelector(hue, saturation, brightness)
+            drawSelector(animatedHue, animatedSaturation, brightness)
         }
 
         Box(
             modifier = Modifier
                 .size(48.dp)
+                .graphicsLayer { scaleX = wheelScale.value; scaleY = wheelScale.value }
                 .clip(CircleShape)
                 .drawBehind {
-                    drawCircle(currentColor)
+                    drawCircle(previewColor)
                     drawCircle(Color.White, style = Stroke(width = 3.dp.toPx()))
                 }
         )

@@ -15,4 +15,9 @@ class LeakyHandler(private val activity: Activity) {
         }, 5 * 60 * 1000L)
         log.warn("LEAK: posted delayed Runnable holding Activity reference for 5 minutes")
     }
+
+    fun stopLeaking() {
+        handler.removeCallbacksAndMessages(null)
+        log.info("FIX: removed all Handler callbacks, Activity can be collected by GC")
+    }
 }

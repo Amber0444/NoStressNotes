@@ -24,6 +24,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        LeakyHandler(this).startLeaking()
+
         val notebook = FileNotebook()
         notebook.add(Note(title = "Первая заметка", content = "Содержимое первой заметки"))
         notebook.add(Note(title = "Вторая заметка", content = "Содержимое второй заметки"))

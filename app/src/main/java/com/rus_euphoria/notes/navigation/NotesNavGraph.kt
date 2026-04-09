@@ -6,7 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import com.rus_euphoria.notes.FileNotebook
+import com.rus_euphoria.notes.data.NoteRepository
 import com.rus_euphoria.notes.navigation.Screen.EditNote
 import com.rus_euphoria.notes.ui.create.CreateNoteScreen
 import com.rus_euphoria.notes.ui.create.CreateNoteViewModel
@@ -14,13 +14,9 @@ import com.rus_euphoria.notes.ui.edit.EditNoteScreen
 import com.rus_euphoria.notes.ui.edit.EditNoteViewModel
 import com.rus_euphoria.notes.ui.home.HomeScreen
 import com.rus_euphoria.notes.ui.home.HomeViewModel
-import java.io.File
 
 @Composable
-fun NotesNavGraph(
-    notebook: FileNotebook,
-    file: File
-) {
+fun NotesNavGraph(repository: NoteRepository) {
     val backStack = remember { mutableStateListOf<Screen>(Screen.Home) }
 
     NavDisplay(
@@ -29,7 +25,7 @@ fun NotesNavGraph(
         entryProvider = entryProvider {
             entry<Screen.Home> {
                 val viewModel: HomeViewModel = viewModel(
-                    factory = HomeViewModel.Factory(notebook, file)
+                    factory = HomeViewModel.Factory(repository)
                 )
                 HomeScreen(
                     viewModel = viewModel,
@@ -40,7 +36,8 @@ fun NotesNavGraph(
 
             entry<Screen.CreateNote> {
                 val viewModel: CreateNoteViewModel = viewModel(
-                    factory = CreateNoteViewModel.Factory(notebook, file)
+                    key = "create_note_${System.currentTimeMillis()}",
+                    factory = CreateNoteViewModel.Factory(repository)
                 )
                 CreateNoteScreen(
                     viewModel = viewModel,
@@ -51,7 +48,7 @@ fun NotesNavGraph(
             entry<EditNote> { screen ->
                 val viewModel: EditNoteViewModel = viewModel(
                     key = screen.noteUid,
-                    factory = EditNoteViewModel.Factory(notebook, file, screen.noteUid)
+                    factory = EditNoteViewModel.Factory(repository, screen.noteUid)
                 )
                 EditNoteScreen(
                     viewModel = viewModel,

@@ -1,4 +1,4 @@
-package com.rus_euphoria.notes
+package com.rus_euphoria.notes.model
 
 import android.graphics.Color
 import org.json.JSONObject

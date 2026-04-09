@@ -35,10 +35,6 @@ fun HomeScreen(
     var noteToDelete by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        viewModel.onEvent(HomeEvent.Refresh)
-    }
-
-    LaunchedEffect(Unit) {
         viewModel.action.collectLatest { action ->
             when (action) {
                 is HomeAction.NavigateToNote -> onNoteClick(action.uid)

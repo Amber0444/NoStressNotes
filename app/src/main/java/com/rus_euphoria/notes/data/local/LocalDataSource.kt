@@ -1,42 +1,38 @@
 package com.rus_euphoria.notes.data.local
 
+import com.rus_euphoria.notes.data.local.db.NoteDao
+import com.rus_euphoria.notes.data.local.db.toDomain
+import com.rus_euphoria.notes.data.local.db.toEntity
 import com.rus_euphoria.notes.model.Note
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.withContext
-import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
-class LocalDataSource(private val file: File) {
+class LocalDataSource(
+    private val dao: NoteDao,
+    externalScope: CoroutineScope,
+) {
+    val notes: StateFlow<List<Note>> = dao.observeAll()
+        .map { list -> list.map { it.toDomain() } }
+        .stateIn(
+            scope = externalScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList(),
+        )
 
-    private val notebook = FileNotebook()
+    fun getNote(uid: String): Note? = notes.value.find { it.uid == uid }
 
-    private val _notes = MutableStateFlow<List<Note>>(emptyList())
-    val notes: Flow<List<Note>> = _notes.asStateFlow()
-
-    init {
-        notebook.loadFromFile(file)
-        _notes.value = notebook.notes
+    suspend fun saveNote(note: Note) {
+        dao.upsert(note.toEntity())
     }
 
-    fun getNote(uid: String): Note? = notebook.notes.find { it.uid == uid }
-
-    suspend fun saveNote(note: Note) = withContext(Dispatchers.IO) {
-        notebook.add(note)
-        notebook.saveToFile(file)
-        _notes.value = notebook.notes
+    suspend fun deleteNote(uid: String) {
+        dao.deleteByUid(uid)
     }
 
-    suspend fun deleteNote(uid: String) = withContext(Dispatchers.IO) {
-        notebook.remove(uid)
-        notebook.saveToFile(file)
-        _notes.value = notebook.notes
-    }
-
-    suspend fun replaceAll(notes: List<Note>) = withContext(Dispatchers.IO) {
-        notebook.replaceAll(notes)
-        notebook.saveToFile(file)
-        _notes.value = notebook.notes
+    suspend fun replaceAll(notes: List<Note>) {
+        dao.replaceAll(notes.map { it.toEntity() })
     }
 }

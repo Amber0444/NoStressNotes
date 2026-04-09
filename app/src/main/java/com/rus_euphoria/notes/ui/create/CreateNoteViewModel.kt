@@ -58,7 +58,7 @@ class CreateNoteViewModel(
             selfDestructDate = if (s.selfDestructEnabled) s.selfDestructDate else null
         )
         viewModelScope.launch {
-            repository.saveNote(note)
+            repository.createNote(note)
             _action.trySend(CreateNoteAction.NavigateBack)
         }
     }

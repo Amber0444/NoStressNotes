@@ -83,11 +83,11 @@ fun HomeScreen(
         ) {
             GreetingSection(
                 greeting = state.greeting,
-                noteCount = state.notes.size
+                noteCount = state.totalCount
             )
 
             NoteGrid(
-                notes = state.notes,
+                sections = state.sections,
                 onNoteClick = { uid -> viewModel.onEvent(HomeEvent.NoteClicked(uid)) },
                 onNoteDelete = { uid -> noteToDelete = uid },
                 modifier = Modifier.weight(1f)

@@ -34,10 +34,10 @@ fun NoteGrid(
     ) {
         sections.forEach { section ->
             item(
-                key = "header-${section.importance.name}",
+                key = "header-${section.headerKey()}",
                 span = StaggeredGridItemSpan.FullLine
             ) {
-                SectionHeader(section.importance, section.notes.size)
+                SectionHeader(section)
             }
             items(section.notes, key = { it.uid }) { note ->
                 SwipeableWrapper(
@@ -53,15 +53,23 @@ fun NoteGrid(
     }
 }
 
+private fun NoteSection.headerKey(): String = when (this) {
+    is NoteSection.Pinned -> "pinned"
+    is NoteSection.ByImportance -> importance.name
+}
+
 @Composable
-private fun SectionHeader(importance: Importance, count: Int) {
-    val title = when (importance) {
-        Importance.HIGH -> "Важные"
-        Importance.NORMAL -> "Обычные"
-        Importance.LOW -> "Не срочные"
+private fun SectionHeader(section: NoteSection) {
+    val title = when (section) {
+        is NoteSection.Pinned -> "Закреплённые"
+        is NoteSection.ByImportance -> when (section.importance) {
+            Importance.HIGH -> "Важные"
+            Importance.NORMAL -> "Обычные"
+            Importance.LOW -> "Не срочные"
+        }
     }
     Text(
-        text = "$title · $count",
+        text = "$title · ${section.notes.size}",
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
         modifier = Modifier

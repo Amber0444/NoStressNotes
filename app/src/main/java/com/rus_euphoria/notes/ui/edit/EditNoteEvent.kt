@@ -15,4 +15,5 @@ sealed interface EditNoteEvent {
     data object CloseColorPicker : EditNoteEvent
     data object SaveClicked : EditNoteEvent
     data object DeleteClicked : EditNoteEvent
+    data object PinToggled : EditNoteEvent
 }

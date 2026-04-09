@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [NoteEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -27,7 +27,10 @@ abstract class NotesDatabase : RoomDatabase() {
                 context.applicationContext,
                 NotesDatabase::class.java,
                 DB_NAME,
-            ).build().also { instance = it }
+            )
+                .addMigrations(MIGRATION_1_2)
+                .build()
+                .also { instance = it }
         }
     }
 }

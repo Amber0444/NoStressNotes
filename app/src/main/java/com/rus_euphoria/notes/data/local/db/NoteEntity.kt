@@ -14,6 +14,7 @@ data class NoteEntity(
     val color: Int,
     val importance: Importance,
     val selfDestructDate: Date?,
+    val pinned: Boolean = false,
 )
 
 fun NoteEntity.toDomain(): Note = Note(
@@ -23,6 +24,7 @@ fun NoteEntity.toDomain(): Note = Note(
     color = color,
     importance = importance,
     selfDestructDate = selfDestructDate,
+    pinned = pinned,
 )
 
 fun Note.toEntity(): NoteEntity = NoteEntity(
@@ -32,4 +34,5 @@ fun Note.toEntity(): NoteEntity = NoteEntity(
     color = color,
     importance = importance,
     selfDestructDate = selfDestructDate,
+    pinned = pinned,
 )

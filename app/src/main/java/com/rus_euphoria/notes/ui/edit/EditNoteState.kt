@@ -12,5 +12,6 @@ data class EditNoteState(
     val selfDestructEnabled: Boolean = false,
     val selfDestructDate: Date? = null,
     val customColor: Int? = null,
-    val showColorPicker: Boolean = false
+    val showColorPicker: Boolean = false,
+    val pinned: Boolean = false,
 )

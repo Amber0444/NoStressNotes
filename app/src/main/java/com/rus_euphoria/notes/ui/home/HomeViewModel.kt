@@ -34,10 +34,15 @@ class HomeViewModel(
                     hour < 18 -> "Good afternoon"
                     else -> "Good evening"
                 }
+                val (pinned, rest) = notes.partition { it.pinned }
                 val sectionOrder = listOf(Importance.HIGH, Importance.NORMAL, Importance.LOW)
-                val grouped = notes.groupBy { it.importance }
-                val sections = sectionOrder
-                    .mapNotNull { imp -> grouped[imp]?.let { NoteSection(imp, it) } }
+                val grouped = rest.groupBy { it.importance }
+                val sections = buildList<NoteSection> {
+                    if (pinned.isNotEmpty()) add(NoteSection.Pinned(pinned))
+                    sectionOrder.forEach { imp ->
+                        grouped[imp]?.let { add(NoteSection.ByImportance(imp, it)) }
+                    }
+                }
                 _state.update {
                     it.copy(
                         sections = sections,

@@ -34,7 +34,8 @@ class EditNoteViewModel(
                 color = note.color,
                 importance = note.importance,
                 selfDestructEnabled = note.selfDestructDate != null,
-                selfDestructDate = note.selfDestructDate
+                selfDestructDate = note.selfDestructDate,
+                pinned = note.pinned,
             )
         }
     }
@@ -59,6 +60,7 @@ class EditNoteViewModel(
             is EditNoteEvent.CloseColorPicker -> _state.update { it.copy(showColorPicker = false) }
             is EditNoteEvent.SaveClicked -> save()
             is EditNoteEvent.DeleteClicked -> delete()
+            is EditNoteEvent.PinToggled -> _state.update { it.copy(pinned = !it.pinned) }
         }
     }
 
@@ -71,7 +73,8 @@ class EditNoteViewModel(
             content = s.content,
             color = s.color,
             importance = s.importance,
-            selfDestructDate = if (s.selfDestructEnabled) s.selfDestructDate else null
+            selfDestructDate = if (s.selfDestructEnabled) s.selfDestructDate else null,
+            pinned = s.pinned,
         )
         viewModelScope.launch {
             repository.updateNote(note)

@@ -10,7 +10,8 @@ data class Note(
     val content: String,
     val color: Int = Color.WHITE,
     val importance: Importance = Importance.NORMAL,
-    val selfDestructDate: Date? = null
+    val selfDestructDate: Date? = null,
+    val pinned: Boolean = false,
 ) {
     companion object
 }

@@ -53,9 +53,11 @@ fun CreateNoteScreen(
         topBar = {
             EditNoteTopBar(
                 isExistingNote = false,
+                pinned = false,
                 onBack = onNavigateBack,
                 onSave = { viewModel.onEvent(CreateNoteEvent.SaveClicked) },
-                onDelete = {}
+                onDelete = {},
+                onTogglePin = {},
             )
         }
     ) { innerPadding ->

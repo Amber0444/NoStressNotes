@@ -47,8 +47,15 @@ class NoteRepository(
         externalScope.launch {
             runCatching { remoteDataSource.fetchNotes() }
                 .onSuccess { remoteNotes ->
-                    log.info("refreshFromRemote: got ${remoteNotes.size} notes")
-                    localDataSource.replaceAll(remoteNotes)
+                    val pinnedUids = localDataSource.notes.value
+                        .filter { it.pinned }
+                        .map { it.uid }
+                        .toSet()
+                    val merged = remoteNotes.map { note ->
+                        if (note.uid in pinnedUids) note.copy(pinned = true) else note
+                    }
+                    log.info("refreshFromRemote: got ${remoteNotes.size} notes, preserved ${pinnedUids.size} pinned")
+                    localDataSource.replaceAll(merged)
                 }
                 .onFailure { log.error("refreshFromRemote failed", it) }
         }

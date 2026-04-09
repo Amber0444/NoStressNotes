@@ -4,6 +4,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,9 +18,11 @@ import androidx.compose.runtime.Composable
 @Composable
 fun EditNoteTopBar(
     isExistingNote: Boolean,
+    pinned: Boolean,
     onBack: () -> Unit,
     onSave: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onTogglePin: () -> Unit,
 ) {
     TopAppBar(
         title = {},
@@ -32,6 +36,12 @@ fun EditNoteTopBar(
         },
         actions = {
             if (isExistingNote) {
+                IconButton(onClick = onTogglePin) {
+                    Icon(
+                        imageVector = if (pinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                        contentDescription = if (pinned) "Unpin" else "Pin"
+                    )
+                }
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Delete")
                 }

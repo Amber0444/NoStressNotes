@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.rus_euphoria.notes.data.NoteRepository
 import com.rus_euphoria.notes.data.local.LocalDataSource
+import com.rus_euphoria.notes.data.local.db.NotesDatabase
 import com.rus_euphoria.notes.data.remote.DeviceProvider
 import com.rus_euphoria.notes.data.remote.RemoteDataSource
 import com.rus_euphoria.notes.data.remote.SyncManager
@@ -15,14 +16,13 @@ import com.rus_euphoria.notes.ui.theme.NotesAppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import java.io.File
 
 class MainActivity : ComponentActivity() {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val repository by lazy {
-        val file = File(filesDir, "notes.json")
-        val localDataSource = LocalDataSource(file)
+        val database = NotesDatabase.get(applicationContext)
+        val localDataSource = LocalDataSource(database.noteDao(), applicationScope)
         val deviceProvider = DeviceProvider(applicationContext)
         val syncManager = SyncManager(
             api = TodoApiClient.apiService,

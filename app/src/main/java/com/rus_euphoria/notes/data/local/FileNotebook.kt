@@ -39,6 +39,12 @@ class FileNotebook {
         }
     }
 
+    fun replaceAll(notes: List<Note>) {
+        _notes.clear()
+        _notes.addAll(notes)
+        log.info("Replaced notebook with ${notes.size} notes")
+    }
+
     fun saveToFile(file: File) {
         removeExpiredNotes()
         val jsonArray = JSONArray()

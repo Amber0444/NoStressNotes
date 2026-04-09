@@ -74,7 +74,7 @@ class EditNoteViewModel(
             selfDestructDate = if (s.selfDestructEnabled) s.selfDestructDate else null
         )
         viewModelScope.launch {
-            repository.saveNote(note)
+            repository.updateNote(note)
             _action.trySend(EditNoteAction.NavigateBack)
         }
     }

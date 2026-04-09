@@ -1,22 +1,36 @@
 package com.rus_euphoria.notes.data.remote
 
 import com.rus_euphoria.notes.model.Note
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 
-class RemoteDataSource {
+class RemoteDataSource(private val syncManager: SyncManager) {
 
     private val log = LoggerFactory.getLogger(RemoteDataSource::class.java)
 
-    suspend fun fetchNotes(): List<Note> {
-        log.info("fetchNotes: loading notes from backend (stub)")
-        return emptyList()
+    suspend fun fetchNotes(): List<Note> = withContext(Dispatchers.IO) {
+        log.info("fetchNotes")
+        syncManager.fetchAll()
     }
 
-    suspend fun saveNote(note: Note) {
-        log.info("pushNote: sending note uid=${note.uid}, title='${note.title}' to backend (stub)")
+    suspend fun addNote(note: Note): Note = withContext(Dispatchers.IO) {
+        log.info("addNote uid=${note.uid}")
+        syncManager.addRemote(note)
     }
 
-    suspend fun deleteNote(uid: String) {
-        log.info("deleteNote: deleting note uid=$uid from backend (stub)")
+    suspend fun updateNote(note: Note): Note = withContext(Dispatchers.IO) {
+        log.info("updateNote uid=${note.uid}")
+        syncManager.updateRemote(note)
+    }
+
+    suspend fun deleteNote(uid: String) = withContext(Dispatchers.IO) {
+        log.info("deleteNote uid=$uid")
+        syncManager.deleteRemote(uid)
+    }
+
+    suspend fun pushAll(notes: List<Note>): List<Note> = withContext(Dispatchers.IO) {
+        log.info("pushAll size=${notes.size}")
+        syncManager.pushAll(notes)
     }
 }

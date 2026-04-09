@@ -1,9 +1,11 @@
 package com.rus_euphoria.notes.data.local
 
 import com.rus_euphoria.notes.model.Note
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class LocalDataSource(private val file: File) {
@@ -18,18 +20,22 @@ class LocalDataSource(private val file: File) {
         _notes.value = notebook.notes
     }
 
-    fun getNotes(): List<Note> = notebook.notes
-
     fun getNote(uid: String): Note? = notebook.notes.find { it.uid == uid }
 
-    fun saveNote(note: Note) {
+    suspend fun saveNote(note: Note) = withContext(Dispatchers.IO) {
         notebook.add(note)
         notebook.saveToFile(file)
         _notes.value = notebook.notes
     }
 
-    fun deleteNote(uid: String) {
+    suspend fun deleteNote(uid: String) = withContext(Dispatchers.IO) {
         notebook.remove(uid)
+        notebook.saveToFile(file)
+        _notes.value = notebook.notes
+    }
+
+    suspend fun replaceAll(notes: List<Note>) = withContext(Dispatchers.IO) {
+        notebook.replaceAll(notes)
         notebook.saveToFile(file)
         _notes.value = notebook.notes
     }

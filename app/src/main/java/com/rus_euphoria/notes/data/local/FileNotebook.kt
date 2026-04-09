@@ -1,5 +1,8 @@
-package com.rus_euphoria.notes
+package com.rus_euphoria.notes.data.local
 
+import com.rus_euphoria.notes.model.Note
+import com.rus_euphoria.notes.model.json
+import com.rus_euphoria.notes.model.parse
 import org.json.JSONArray
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -54,7 +57,7 @@ class FileNotebook {
         val jsonArray = JSONArray(file.readText())
         _notes.clear()
         for (i in 0 until jsonArray.length()) {
-            val note = Note.parse(jsonArray.getJSONObject(i))
+            val note = Note.Companion.parse(jsonArray.getJSONObject(i))
             if (note != null) {
                 _notes.add(note)
             } else {

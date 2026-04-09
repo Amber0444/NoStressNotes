@@ -2,19 +2,19 @@ package com.rus_euphoria.notes.ui.edit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.rus_euphoria.notes.FileNotebook
-import com.rus_euphoria.notes.Note
+import androidx.lifecycle.viewModelScope
+import com.rus_euphoria.notes.model.Note
+import com.rus_euphoria.notes.data.NoteRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import java.io.File
+import kotlinx.coroutines.launch
 
 class EditNoteViewModel(
-    private val notebook: FileNotebook,
-    private val file: File,
+    private val repository: NoteRepository,
     noteUid: String
 ) : ViewModel() {
 
@@ -25,7 +25,7 @@ class EditNoteViewModel(
     val action = _action.receiveAsFlow()
 
     init {
-        val note = notebook.notes.find { it.uid == noteUid }
+        val note = repository.getNote(noteUid)
         if (note != null) {
             _state.value = EditNoteState(
                 uid = note.uid,
@@ -73,25 +73,26 @@ class EditNoteViewModel(
             importance = s.importance,
             selfDestructDate = if (s.selfDestructEnabled) s.selfDestructDate else null
         )
-        notebook.add(note)
-        notebook.saveToFile(file)
-        _action.trySend(EditNoteAction.NavigateBack)
+        viewModelScope.launch {
+            repository.saveNote(note)
+            _action.trySend(EditNoteAction.NavigateBack)
+        }
     }
 
     private fun delete() {
-        notebook.remove(_state.value.uid)
-        notebook.saveToFile(file)
-        _action.trySend(EditNoteAction.NavigateBack)
+        viewModelScope.launch {
+            repository.deleteNote(_state.value.uid)
+            _action.trySend(EditNoteAction.NavigateBack)
+        }
     }
 
     class Factory(
-        private val notebook: FileNotebook,
-        private val file: File,
+        private val repository: NoteRepository,
         private val noteUid: String
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return EditNoteViewModel(notebook, file, noteUid) as T
+            return EditNoteViewModel(repository, noteUid) as T
         }
     }
 }

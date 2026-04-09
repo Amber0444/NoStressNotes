@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.rus_euphoria.notes.Note
+import com.rus_euphoria.notes.model.Note
 import java.text.SimpleDateFormat
 import java.util.Locale
 

@@ -2,20 +2,20 @@ package com.rus_euphoria.notes.ui.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.rus_euphoria.notes.FileNotebook
-import com.rus_euphoria.notes.Note
+import androidx.lifecycle.viewModelScope
+import com.rus_euphoria.notes.model.Note
+import com.rus_euphoria.notes.data.NoteRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import java.io.File
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 class CreateNoteViewModel(
-    private val notebook: FileNotebook,
-    private val file: File
+    private val repository: NoteRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CreateNoteState())
@@ -57,18 +57,18 @@ class CreateNoteViewModel(
             importance = s.importance,
             selfDestructDate = if (s.selfDestructEnabled) s.selfDestructDate else null
         )
-        notebook.add(note)
-        notebook.saveToFile(file)
-        _action.trySend(CreateNoteAction.NavigateBack)
+        viewModelScope.launch {
+            repository.saveNote(note)
+            _action.trySend(CreateNoteAction.NavigateBack)
+        }
     }
 
     class Factory(
-        private val notebook: FileNotebook,
-        private val file: File
+        private val repository: NoteRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return CreateNoteViewModel(notebook, file) as T
+            return CreateNoteViewModel(repository) as T
         }
     }
 }

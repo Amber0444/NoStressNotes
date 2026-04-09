@@ -1,7 +1,7 @@
 package com.rus_euphoria.notes.ui.create
 
 import android.graphics.Color
-import com.rus_euphoria.notes.Importance
+import com.rus_euphoria.notes.model.Importance
 import java.util.Date
 
 data class CreateNoteState(

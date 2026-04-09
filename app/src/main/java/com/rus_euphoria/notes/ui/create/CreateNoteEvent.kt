@@ -1,6 +1,6 @@
 package com.rus_euphoria.notes.ui.create
 
-import com.rus_euphoria.notes.Importance
+import com.rus_euphoria.notes.model.Importance
 import java.util.Date
 
 sealed interface CreateNoteEvent {

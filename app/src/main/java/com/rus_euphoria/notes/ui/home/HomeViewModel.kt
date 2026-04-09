@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.rus_euphoria.notes.data.NoteRepository
+import com.rus_euphoria.notes.model.Importance
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +34,17 @@ class HomeViewModel(
                     hour < 18 -> "Good afternoon"
                     else -> "Good evening"
                 }
-                _state.update { it.copy(notes = notes, greeting = greeting) }
+                val sectionOrder = listOf(Importance.HIGH, Importance.NORMAL, Importance.LOW)
+                val grouped = notes.groupBy { it.importance }
+                val sections = sectionOrder
+                    .mapNotNull { imp -> grouped[imp]?.let { NoteSection(imp, it) } }
+                _state.update {
+                    it.copy(
+                        sections = sections,
+                        totalCount = notes.size,
+                        greeting = greeting
+                    )
+                }
             }
         }
     }
